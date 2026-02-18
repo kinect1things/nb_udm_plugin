@@ -37,12 +37,17 @@ class NbUdmPluginConfig(PluginConfig):
 
     @staticmethod
     def _cleanup_stale_jobs():
-        """Mark any 'running' scan jobs as failed on startup."""
+        """Mark 'running' scan jobs older than 5 minutes as failed on startup."""
         from django.db import OperationalError, ProgrammingError
         try:
+            from datetime import timedelta
             from .models import ScanJob
             from django.utils import timezone
-            stale = ScanJob.objects.filter(status='running').update(
+            cutoff = timezone.now() - timedelta(minutes=5)
+            stale = ScanJob.objects.filter(
+                status='running',
+                started_at__lt=cutoff,
+            ).update(
                 status='failed',
                 completed_at=timezone.now(),
             )
