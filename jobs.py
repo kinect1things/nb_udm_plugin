@@ -1,7 +1,9 @@
 """
 Background jobs for discovery scanning.
 """
+import logging
 import traceback
+from datetime import timedelta
 
 from django.utils import timezone
 
@@ -11,6 +13,8 @@ from .choices import ScanJobStatusChoices
 from .models import DiscoveryResult, DiscoverySource, ScanJob
 from .reconciliation import reconcile
 from .scanner import scan_source
+
+logger = logging.getLogger('nb_udm_plugin')
 
 
 class DiscoveryScanJob(JobRunner):
@@ -77,3 +81,28 @@ class DiscoveryScanJob(JobRunner):
             source.last_scan = timezone.now()
             source.last_scan_success = False
             source.save()
+
+
+class StaleJobReaper(JobRunner):
+    """Mark scan jobs that have been running too long as failed."""
+
+    class Meta:
+        name = 'Stale Job Reaper'
+
+    MAX_RUNTIME_MINUTES = 30
+
+    def run(self, *args, **kwargs):
+        cutoff = timezone.now() - timedelta(minutes=self.MAX_RUNTIME_MINUTES)
+        stale_jobs = ScanJob.objects.filter(
+            status=ScanJobStatusChoices.STATUS_RUNNING,
+            started_at__lt=cutoff,
+        )
+        count = stale_jobs.count()
+        if count:
+            stale_jobs.update(
+                status=ScanJobStatusChoices.STATUS_FAILED,
+                completed_at=timezone.now(),
+            )
+            self.log_warning(f'Marked {count} stale scan job(s) as failed (>{self.MAX_RUNTIME_MINUTES}min)')
+        else:
+            self.log_info('No stale jobs found')

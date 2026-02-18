@@ -25,6 +25,36 @@ class NbUdmPluginConfig(PluginConfig):
     def ready(self):
         super().ready()
         from . import jobs  # noqa: F401
+        self._cleanup_stale_jobs()
+        self._schedule_reaper()
+
+    @staticmethod
+    def _cleanup_stale_jobs():
+        """Mark any 'running' scan jobs as failed on startup."""
+        from django.db import OperationalError, ProgrammingError
+        try:
+            from .models import ScanJob
+            from django.utils import timezone
+            stale = ScanJob.objects.filter(status='running').update(
+                status='failed',
+                completed_at=timezone.now(),
+            )
+            if stale:
+                import logging
+                logger = logging.getLogger('nb_udm_plugin')
+                logger.warning(f'Marked {stale} stale scan job(s) as failed on startup')
+        except (OperationalError, ProgrammingError):
+            pass  # Table doesn't exist yet (fresh install before migrations)
+
+    @staticmethod
+    def _schedule_reaper():
+        """Schedule the stale job reaper to run every 15 minutes."""
+        from django.db import OperationalError, ProgrammingError
+        try:
+            from .jobs import StaleJobReaper
+            StaleJobReaper.enqueue_once(interval=15)
+        except (OperationalError, ProgrammingError):
+            pass  # Table doesn't exist yet
 
 
 config = NbUdmPluginConfig
