@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.views import View
 
 from netbox.views import generic
+from netbox.views.generic.feature_views import ObjectChangeLogView, ObjectJobsView
 from utilities.views import register_model_view
 
 from . import filtersets, forms, models, tables
@@ -58,6 +59,16 @@ class DiscoverySourceDeleteView(generic.ObjectDeleteView):
     queryset = models.DiscoverySource.objects.all()
 
 
+@register_model_view(models.DiscoverySource, 'changelog')
+class DiscoverySourceChangeLogView(ObjectChangeLogView):
+    queryset = models.DiscoverySource.objects.all()
+
+
+@register_model_view(models.DiscoverySource, 'jobs')
+class DiscoverySourceJobsView(ObjectJobsView):
+    queryset = models.DiscoverySource.objects.all()
+
+
 # --- Source Actions ---
 
 class DiscoverySourceTestView(View):
@@ -105,6 +116,11 @@ class ScanJobListView(generic.ObjectListView):
     table = tables.ScanJobTable
     filterset = filtersets.ScanJobFilterSet
     filterset_form = forms.ScanJobFilterForm
+
+
+@register_model_view(models.ScanJob, 'changelog')
+class ScanJobChangeLogView(ObjectChangeLogView):
+    queryset = models.ScanJob.objects.all()
 
 
 # --- DiscoveryResult ---
@@ -186,6 +202,11 @@ class DiscoveryResultBulkRejectView(View):
         return redirect('plugins:nb_udm_plugin:discoveryresult_list')
 
 
+@register_model_view(models.DiscoveryResult, 'changelog')
+class DiscoveryResultChangeLogView(ObjectChangeLogView):
+    queryset = models.DiscoveryResult.objects.all()
+
+
 # --- DiscoveryMapping ---
 
 @register_model_view(models.DiscoveryMapping)
@@ -199,3 +220,8 @@ class DiscoveryMappingListView(generic.ObjectListView):
     table = tables.DiscoveryMappingTable
     filterset = filtersets.DiscoveryMappingFilterSet
     filterset_form = forms.DiscoveryMappingFilterForm
+
+
+@register_model_view(models.DiscoveryMapping, 'changelog')
+class DiscoveryMappingChangeLogView(ObjectChangeLogView):
+    queryset = models.DiscoveryMapping.objects.all()
