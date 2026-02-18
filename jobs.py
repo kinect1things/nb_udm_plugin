@@ -26,7 +26,7 @@ class DiscoveryScanJob(JobRunner):
     def run(self, *args, **kwargs):
         source = self.job.object
         if not isinstance(source, DiscoverySource):
-            self.log_failure(f'Expected DiscoverySource, got {type(source)}')
+            logger.error('Expected DiscoverySource, got %s', type(source))
             return
 
         scan_job = ScanJob.objects.create(
@@ -36,15 +36,14 @@ class DiscoveryScanJob(JobRunner):
         )
 
         try:
-            self.log_info(f'Starting scan for source: {source.name}')
+            logger.info('Starting scan for source: %s', source.name)
 
             # Run the scanner
             discovered = scan_source(source)
             scan_job.discovered_count = len(discovered)
-            self.log_info(f'Discovered {len(discovered)} objects')
+            logger.info('Discovered %d objects from %s', len(discovered), source.name)
 
             # Reconcile against NetBox
-            self.log_info('Running reconciliation...')
             results = reconcile(source, scan_job, discovered)
 
             # Bulk create results
@@ -65,14 +64,14 @@ class DiscoveryScanJob(JobRunner):
             source.last_scan_success = True
             source.save()
 
-            self.log_success(
-                f'Scan complete: {scan_job.discovered_count} discovered, '
-                f'{scan_job.created_count} to create, '
-                f'{scan_job.updated_count} to update'
+            logger.info(
+                'Scan complete for %s: %d discovered, %d to create, %d to update',
+                source.name, scan_job.discovered_count,
+                scan_job.created_count, scan_job.updated_count,
             )
 
         except Exception as e:
-            self.log_failure(f'Scan failed: {e}')
+            logger.error('Scan failed for %s: %s', source.name, e)
             scan_job.status = ScanJobStatusChoices.STATUS_FAILED
             scan_job.error_count += 1
             scan_job.log = traceback.format_exc()
@@ -103,6 +102,6 @@ class StaleJobReaper(JobRunner):
                 status=ScanJobStatusChoices.STATUS_FAILED,
                 completed_at=timezone.now(),
             )
-            self.log_warning(f'Marked {count} stale scan job(s) as failed (>{self.MAX_RUNTIME_MINUTES}min)')
+            logger.warning('Marked %d stale scan job(s) as failed (>%dmin)', count, self.MAX_RUNTIME_MINUTES)
         else:
-            self.log_info('No stale jobs found')
+            logger.debug('Stale job reaper: no stale jobs found')

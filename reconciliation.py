@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.text import slugify
 
-from dcim.models import Device, DeviceRole, DeviceType, Interface, Manufacturer, Site
+from dcim.models import Device, DeviceRole, DeviceType, Interface, MACAddress, Manufacturer, Site
 from ipam.models import IPAddress, VLAN, VLANGroup
 
 from .choices import ResultActionChoices, ResultStatusChoices
@@ -117,12 +117,12 @@ def _find_match(source, discovered):
             if device:
                 return device
 
-        # 3. MAC match on interface
+        # 3. MAC match via MACAddress model
         mac = data.get('mac')
         if mac:
-            iface = Interface.objects.filter(mac_address=mac).first()
-            if iface and iface.device:
-                return iface.device
+            mac_obj = MACAddress.objects.filter(mac_address=mac).first()
+            if mac_obj and mac_obj.assigned_object and hasattr(mac_obj.assigned_object, 'device'):
+                return mac_obj.assigned_object.device
 
         # 4. Name + site
         name = data.get('name')
@@ -430,9 +430,18 @@ def _assign_device_ip(device, ip, mac=None):
             name='mgmt',
             type='virtual',
         )
-        if mac:
-            interface.mac_address = mac
         interface.save()
+        if mac:
+            ct = ContentType.objects.get_for_model(Interface)
+            mac_obj, _ = MACAddress.objects.get_or_create(
+                mac_address=mac,
+                defaults={
+                    'assigned_object_type': ct,
+                    'assigned_object_id': interface.id,
+                },
+            )
+            interface.primary_mac_address = mac_obj
+            interface.save()
 
     ip_with_prefix = f'{ip}/24'
     existing_ip = IPAddress.objects.filter(address=ip_with_prefix).first()
