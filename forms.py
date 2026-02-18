@@ -3,6 +3,7 @@ from django import forms
 from dcim.models import Site
 from netbox.forms import NetBoxModelForm, NetBoxModelFilterSetForm
 from utilities.forms.fields import DynamicModelChoiceField
+from utilities.forms.utils import add_blank_choice
 
 from .choices import (
     DiscoveredTypeChoices,
@@ -45,7 +46,7 @@ class DiscoverySourceForm(NetBoxModelForm):
 class DiscoverySourceFilterForm(NetBoxModelFilterSetForm):
     model = DiscoverySource
     status = forms.ChoiceField(
-        choices=[('', '---------')] + SourceStatusChoices.CHOICES,
+        choices=add_blank_choice(SourceStatusChoices),
         required=False,
     )
     site_id = DynamicModelChoiceField(
@@ -58,7 +59,7 @@ class DiscoverySourceFilterForm(NetBoxModelFilterSetForm):
 class ScanJobFilterForm(NetBoxModelFilterSetForm):
     model = ScanJob
     status = forms.ChoiceField(
-        choices=[('', '---------')] + ScanJobStatusChoices.CHOICES,
+        choices=add_blank_choice(ScanJobStatusChoices),
         required=False,
     )
     source_id = DynamicModelChoiceField(
@@ -71,15 +72,15 @@ class ScanJobFilterForm(NetBoxModelFilterSetForm):
 class DiscoveryResultFilterForm(NetBoxModelFilterSetForm):
     model = DiscoveryResult
     status = forms.ChoiceField(
-        choices=[('', '---------')] + ResultStatusChoices.CHOICES,
+        choices=add_blank_choice(ResultStatusChoices),
         required=False,
     )
     action = forms.ChoiceField(
-        choices=[('', '---------')] + ResultActionChoices.CHOICES,
+        choices=add_blank_choice(ResultActionChoices),
         required=False,
     )
     discovered_type = forms.ChoiceField(
-        choices=[('', '---------')] + DiscoveredTypeChoices.CHOICES,
+        choices=add_blank_choice(DiscoveredTypeChoices),
         required=False,
     )
     source_id = DynamicModelChoiceField(
