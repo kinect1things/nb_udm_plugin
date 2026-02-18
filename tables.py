@@ -39,6 +39,7 @@ class ScanJobTable(NetBoxTable):
     created_count = tables.Column(verbose_name='Created')
     updated_count = tables.Column(verbose_name='Updated')
     error_count = tables.Column(verbose_name='Errors')
+    actions = columns.ActionsColumn(actions=('changelog',))
 
     class Meta(NetBoxTable.Meta):
         model = ScanJob
@@ -51,7 +52,6 @@ class ScanJobTable(NetBoxTable):
             'pk', 'source', 'status', 'started_at',
             'discovered_count', 'created_count', 'updated_count', 'error_count',
         )
-        actions = ()
 
 
 class DiscoveryResultTable(NetBoxTable):
@@ -61,6 +61,7 @@ class DiscoveryResultTable(NetBoxTable):
     action = columns.ChoiceFieldColumn()
     status = columns.ChoiceFieldColumn()
     scan_job = tables.Column(linkify=True, verbose_name='Scan')
+    actions = columns.ActionsColumn(actions=('changelog',))
 
     class Meta(NetBoxTable.Meta):
         model = DiscoveryResult
@@ -71,7 +72,6 @@ class DiscoveryResultTable(NetBoxTable):
         default_columns = (
             'pk', 'identity_key', 'source', 'discovered_type', 'action', 'status',
         )
-        actions = ()
 
 
 class DiscoveryMappingTable(NetBoxTable):
@@ -80,6 +80,7 @@ class DiscoveryMappingTable(NetBoxTable):
     first_seen = tables.DateTimeColumn()
     last_seen = tables.DateTimeColumn()
     is_orphan = columns.BooleanColumn()
+    actions = columns.ActionsColumn(actions=('changelog',))
 
     class Meta(NetBoxTable.Meta):
         model = DiscoveryMapping
@@ -90,4 +91,3 @@ class DiscoveryMappingTable(NetBoxTable):
         default_columns = (
             'source', 'identity_key', 'last_seen', 'is_orphan',
         )
-        actions = ()
