@@ -71,6 +71,7 @@ class DiscoverySourceTestView(View):
                 api_mode=config.get('api_mode', 'token'),
                 site=config.get('site', 'default'),
                 verify_ssl=config.get('verify_ssl', False),
+                token=source.token,
             )
             client.connect()
             site_count = len(client.sites)

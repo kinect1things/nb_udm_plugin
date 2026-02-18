@@ -4,6 +4,7 @@ from django.db import models
 from django.urls import reverse
 
 from netbox.models import NetBoxModel
+from netbox.models.features import JobsMixin
 
 from .choices import (
     DiscoveredTypeChoices,
@@ -14,7 +15,7 @@ from .choices import (
 )
 
 
-class DiscoverySource(NetBoxModel):
+class DiscoverySource(JobsMixin, NetBoxModel):
     """A configured UniFi controller connection."""
 
     name = models.CharField(max_length=100, unique=True)
