@@ -51,6 +51,7 @@ class ScanJobTable(NetBoxTable):
             'pk', 'source', 'status', 'started_at',
             'discovered_count', 'created_count', 'updated_count', 'error_count',
         )
+        actions = ()
 
 
 class DiscoveryResultTable(NetBoxTable):
@@ -70,6 +71,7 @@ class DiscoveryResultTable(NetBoxTable):
         default_columns = (
             'pk', 'identity_key', 'source', 'discovered_type', 'action', 'status',
         )
+        actions = ()
 
 
 class DiscoveryMappingTable(NetBoxTable):
@@ -88,3 +90,4 @@ class DiscoveryMappingTable(NetBoxTable):
         default_columns = (
             'source', 'identity_key', 'last_seen', 'is_orphan',
         )
+        actions = ()
