@@ -28,6 +28,12 @@ class DiscoverySource(NetBoxModel):
         default=dict,
         help_text='Connection config: host, port, api_mode, site, site_mappings, roles, etc.',
     )
+    token = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        help_text='API token for this source. Falls back to NB_UDM_UNIFI_TOKEN env var if blank.',
+    )
     site = models.ForeignKey(
         to='dcim.Site',
         on_delete=models.SET_NULL,

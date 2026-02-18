@@ -15,6 +15,7 @@
                     <tr><th>Scan Interval</th><td>{% if object.scan_interval %}{{ object.scan_interval }} min{% else %}Manual only{% endif %}</td></tr>
                     <tr><th>Last Scan</th><td>{% if object.last_scan %}{{ object.last_scan }}{% else %}Never{% endif %}</td></tr>
                     <tr><th>Last Scan OK</th><td>{% if object.last_scan_success %}<span class="text-success">Yes</span>{% else %}<span class="text-danger">No</span>{% endif %}</td></tr>
+                    <tr><th>API Token</th><td>{% if object.token %}<span class="text-success">Configured</span>{% else %}<span class="text-muted">Using env var</span>{% endif %}</td></tr>
                 </table>
             </div>
         </div>

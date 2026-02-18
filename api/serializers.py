@@ -9,12 +9,13 @@ class DiscoverySourceSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name='plugins-api:nb_udm_plugin-api:discoverysource-detail',
     )
+    token = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model = DiscoverySource
         fields = (
             'id', 'url', 'display', 'name', 'description', 'status',
-            'config', 'site', 'scan_interval', 'last_scan',
+            'config', 'token', 'site', 'scan_interval', 'last_scan',
             'last_scan_success', 'sync_devices', 'sync_clients',
             'sync_vlans', 'tags', 'created', 'last_updated',
         )

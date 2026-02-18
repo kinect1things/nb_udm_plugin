@@ -22,10 +22,16 @@ class DiscoverySourceForm(NetBoxModelForm):
         required=False,
     )
 
+    token = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={'placeholder': 'Leave blank to use NB_UDM_UNIFI_TOKEN env var'}),
+        help_text='API token for this source. Stored in the database.',
+    )
+
     class Meta:
         model = DiscoverySource
         fields = (
-            'name', 'description', 'status', 'config', 'site',
+            'name', 'description', 'status', 'config', 'token', 'site',
             'scan_interval', 'sync_devices', 'sync_clients', 'sync_vlans',
             'tags',
         )

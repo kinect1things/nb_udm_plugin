@@ -29,11 +29,12 @@ class UnifiClient:
     Classic mode uses username/password with optional MFA (Legacy API).
     """
 
-    def __init__(self, base_url, api_mode='token', site='default', verify_ssl=False):
+    def __init__(self, base_url, api_mode='token', site='default', verify_ssl=False, token=''):
         self.base_url = base_url.rstrip('/')
         self.api_mode = api_mode
         self.site = site
         self.verify_ssl = verify_ssl
+        self._explicit_token = token
         self.session = requests.Session()
         self.session.verify = verify_ssl
         self.sites = {}
@@ -42,9 +43,12 @@ class UnifiClient:
     def connect(self):
         """Establish connection and authenticate."""
         if self.api_mode == 'token':
-            token = os.getenv('NB_UDM_UNIFI_TOKEN', '')
+            token = self._explicit_token or os.getenv('NB_UDM_UNIFI_TOKEN', '')
             if not token:
-                raise ValueError('NB_UDM_UNIFI_TOKEN environment variable not set')
+                raise ValueError(
+                    'No API token provided. Set token on the Discovery Source '
+                    'or the NB_UDM_UNIFI_TOKEN environment variable.'
+                )
             self._api_token = token
             logger.info(f'Using API token authentication for {self.base_url}')
         else:
