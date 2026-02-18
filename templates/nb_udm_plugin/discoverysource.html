@@ -1,0 +1,63 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">Source Details</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr><th>Name</th><td>{{ object.name }}</td></tr>
+                    <tr><th>Status</th><td>{% badge object.get_status_display bg_color=object.status %}</td></tr>
+                    <tr><th>Description</th><td>{{ object.description|placeholder }}</td></tr>
+                    <tr><th>Site</th><td>{{ object.site|linkify|placeholder }}</td></tr>
+                    <tr><th>Scan Interval</th><td>{% if object.scan_interval %}{{ object.scan_interval }} min{% else %}Manual only{% endif %}</td></tr>
+                    <tr><th>Last Scan</th><td>{% if object.last_scan %}{{ object.last_scan }}{% else %}Never{% endif %}</td></tr>
+                    <tr><th>Last Scan OK</th><td>{% if object.last_scan_success %}<span class="text-success">Yes</span>{% else %}<span class="text-danger">No</span>{% endif %}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">Sync Settings</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr><th>Sync Devices</th><td>{% if object.sync_devices %}<span class="text-success">Yes</span>{% else %}No{% endif %}</td></tr>
+                    <tr><th>Sync Clients</th><td>{% if object.sync_clients %}<span class="text-success">Yes</span>{% else %}No{% endif %}</td></tr>
+                    <tr><th>Sync VLANs</th><td>{% if object.sync_vlans %}<span class="text-success">Yes</span>{% else %}No{% endif %}</td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <h5 class="card-header">Actions</h5>
+            <div class="card-body">
+                <form method="post" action="{% url 'plugins:nb_udm_plugin:discoverysource_test' object.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-info">Test Connection</button>
+                </form>
+                <form method="post" action="{% url 'plugins:nb_udm_plugin:discoverysource_scan' object.pk %}" class="d-inline ms-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Scan Now</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <h5 class="card-header">Configuration (non-secret values)</h5>
+            <div class="card-body">
+                <pre class="mb-0">{{ object.config|json_script:"config-data" }}</pre>
+                <script>
+                    document.getElementById('config-data').textContent =
+                        JSON.stringify(JSON.parse(document.getElementById('config-data').textContent), null, 2);
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+from django import forms
+
+from dcim.models import Site
+from netbox.forms import NetBoxModelForm, NetBoxModelFilterSetForm
+from utilities.forms.fields import DynamicModelChoiceField
+
+from .choices import (
+    DiscoveredTypeChoices,
+    ResultActionChoices,
+    ResultStatusChoices,
+    ScanJobStatusChoices,
+    SourceStatusChoices,
+)
+from .models import DiscoveryMapping, DiscoveryResult, DiscoverySource, ScanJob
+
+
+# --- Model Forms ---
+
+class DiscoverySourceForm(NetBoxModelForm):
+    site = DynamicModelChoiceField(
+        queryset=Site.objects.all(),
+        required=False,
+    )
+
+    class Meta:
+        model = DiscoverySource
+        fields = (
+            'name', 'description', 'status', 'config', 'site',
+            'scan_interval', 'sync_devices', 'sync_clients', 'sync_vlans',
+            'tags',
+        )
+        widgets = {
+            'config': forms.Textarea(attrs={'class': 'font-monospace', 'rows': 12}),
+        }
+
+
+# --- Filter Forms ---
+
+class DiscoverySourceFilterForm(NetBoxModelFilterSetForm):
+    model = DiscoverySource
+    status = forms.ChoiceField(
+        choices=[('', '---------')] + SourceStatusChoices.CHOICES,
+        required=False,
+    )
+    site_id = DynamicModelChoiceField(
+        queryset=Site.objects.all(),
+        required=False,
+        label='Site',
+    )
+
+
+class ScanJobFilterForm(NetBoxModelFilterSetForm):
+    model = ScanJob
+    status = forms.ChoiceField(
+        choices=[('', '---------')] + ScanJobStatusChoices.CHOICES,
+        required=False,
+    )
+    source_id = DynamicModelChoiceField(
+        queryset=DiscoverySource.objects.all(),
+        required=False,
+        label='Source',
+    )
+
+
+class DiscoveryResultFilterForm(NetBoxModelFilterSetForm):
+    model = DiscoveryResult
+    status = forms.ChoiceField(
+        choices=[('', '---------')] + ResultStatusChoices.CHOICES,
+        required=False,
+    )
+    action = forms.ChoiceField(
+        choices=[('', '---------')] + ResultActionChoices.CHOICES,
+        required=False,
+    )
+    discovered_type = forms.ChoiceField(
+        choices=[('', '---------')] + DiscoveredTypeChoices.CHOICES,
+        required=False,
+    )
+    source_id = DynamicModelChoiceField(
+        queryset=DiscoverySource.objects.all(),
+        required=False,
+        label='Source',
+    )
+
+
+class DiscoveryMappingFilterForm(NetBoxModelFilterSetForm):
+    model = DiscoveryMapping
+    is_orphan = forms.NullBooleanField(required=False, label='Orphan')
+    source_id = DynamicModelChoiceField(
+        queryset=DiscoverySource.objects.all(),
+        required=False,
+        label='Source',
+    )

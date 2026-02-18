@@ -1,0 +1,95 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">Result Details</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr><th>Identity Key</th><td>{{ object.identity_key }}</td></tr>
+                    <tr><th>Source</th><td>{{ object.source|linkify }}</td></tr>
+                    <tr><th>Scan Job</th><td>{{ object.scan_job|linkify }}</td></tr>
+                    <tr><th>Type</th><td>{{ object.get_discovered_type_display }}</td></tr>
+                    <tr><th>Action</th><td>{% badge object.get_action_display %}</td></tr>
+                    <tr><th>Status</th><td>{% badge object.get_status_display %}</td></tr>
+                    {% if object.matched_object %}
+                    <tr><th>Matched Object</th><td><a href="{{ object.matched_object.get_absolute_url }}">{{ object.matched_object }}</a></td></tr>
+                    {% endif %}
+                    {% if object.reviewed_by %}
+                    <tr><th>Reviewed By</th><td>{{ object.reviewed_by }}</td></tr>
+                    <tr><th>Reviewed At</th><td>{{ object.reviewed_at }}</td></tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        {% if object.status == 'pending' %}
+        <div class="card">
+            <h5 class="card-header">Review</h5>
+            <div class="card-body">
+                <form method="post" action="{% url 'plugins:nb_udm_plugin:discoveryresult_approve' object.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Approve</button>
+                </form>
+                <form method="post" action="{% url 'plugins:nb_udm_plugin:discoveryresult_reject' object.pk %}" class="d-inline ms-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if object.diff %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card">
+            <h5 class="card-header">Changes</h5>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Current</th>
+                            <th>Proposed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field, values in object.diff.items %}
+                        <tr>
+                            <td><strong>{{ field }}</strong></td>
+                            <td class="text-danger">{{ values.current|default:"(empty)" }}</td>
+                            <td class="text-success">{{ values.proposed|default:"(empty)" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">Proposed Data</h5>
+            <div class="card-body">
+                <pre class="mb-0">{{ object.proposed_data|pprint }}</pre>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">Raw Discovered Data</h5>
+            <div class="card-body">
+                <pre class="mb-0">{{ object.discovered_data|pprint }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

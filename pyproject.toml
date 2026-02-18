@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nb-udm-plugin"
+version = "0.1.0"
+description = "NetBox plugin for UniFi device discovery and synchronization"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.12"
+authors = [
+    {name = "Awen Labs"},
+]
+
+dependencies = [
+    "requests>=2.31.0",
+    "pyotp>=2.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/kinect1things/netbox_udm_plugin"
+Repository = "https://github.com/kinect1things/netbox_udm_plugin"
+
+[tool.setuptools]
+packages = ["nb_udm_plugin"]
+
+[tool.setuptools.package-dir]
+"nb_udm_plugin" = "."

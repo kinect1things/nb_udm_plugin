@@ -1,0 +1,34 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">Mapping Details</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr><th>Source</th><td>{{ object.source|linkify }}</td></tr>
+                    <tr><th>Identity Key</th><td>{{ object.identity_key }}</td></tr>
+                    <tr><th>NetBox Object</th><td>
+                        {% if object.netbox_object %}
+                        <a href="{{ object.netbox_object.get_absolute_url }}">{{ object.netbox_object }}</a>
+                        {% else %}
+                        <span class="text-danger">Object deleted</span>
+                        {% endif %}
+                    </td></tr>
+                    <tr><th>First Seen</th><td>{{ object.first_seen }}</td></tr>
+                    <tr><th>Last Seen</th><td>{{ object.last_seen }}</td></tr>
+                    <tr><th>Orphan</th><td>
+                        {% if object.is_orphan %}
+                        <span class="badge bg-danger">Yes</span>
+                        {% else %}
+                        <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

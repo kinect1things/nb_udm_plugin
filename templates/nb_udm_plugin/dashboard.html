@@ -1,0 +1,151 @@
+{% extends 'generic/object_list.html' %}
+{% load helpers %}
+
+{% block title %}UniFi Discovery Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h2>{{ source_count }}</h2>
+                <p class="text-muted mb-0">Sources</p>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'plugins:nb_udm_plugin:discoverysource_list' %}">View All</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card{% if pending_count > 0 %} border-warning{% endif %}">
+            <div class="card-body text-center">
+                <h2>{{ pending_count }}</h2>
+                <p class="text-muted mb-0">Pending Review</p>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'plugins:nb_udm_plugin:discoveryresult_list' %}?status=pending">Review</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card{% if orphan_count > 0 %} border-danger{% endif %}">
+            <div class="card-body text-center">
+                <h2>{{ orphan_count }}</h2>
+                <p class="text-muted mb-0">Orphaned Mappings</p>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'plugins:nb_udm_plugin:discoverymapping_list' %}?is_orphan=true">View</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <a href="{% url 'plugins:nb_udm_plugin:discoverysource_add' %}" class="btn btn-sm btn-primary">
+                    Add Source
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">Sources</h5>
+            <div class="card-body">
+                {% if sources %}
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Last Scan</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for source in sources %}
+                        <tr>
+                            <td><a href="{{ source.get_absolute_url }}">{{ source.name }}</a></td>
+                            <td>
+                                {% if source.status == 'active' %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Disabled</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if source.last_scan %}
+                                {{ source.last_scan|timesince }} ago
+                                {% if not source.last_scan_success %}
+                                <span class="badge bg-danger">Failed</span>
+                                {% endif %}
+                                {% else %}
+                                Never
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'plugins:nb_udm_plugin:discoverysource_scan' source.pk %}" style="display:inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Scan</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No sources configured. <a href="{% url 'plugins:nb_udm_plugin:discoverysource_add' %}">Add one</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">Recent Scans</h5>
+            <div class="card-body">
+                {% if recent_jobs %}
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Status</th>
+                            <th>Discovered</th>
+                            <th>When</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in recent_jobs %}
+                        <tr>
+                            <td><a href="{{ job.source.get_absolute_url }}">{{ job.source.name }}</a></td>
+                            <td>
+                                {% if job.status == 'completed' %}
+                                <span class="badge bg-success">{{ job.get_status_display }}</span>
+                                {% elif job.status == 'failed' %}
+                                <span class="badge bg-danger">{{ job.get_status_display }}</span>
+                                {% elif job.status == 'running' %}
+                                <span class="badge bg-primary">{{ job.get_status_display }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ job.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ job.discovered_count }}</td>
+                            <td>
+                                <a href="{{ job.get_absolute_url }}">
+                                    {{ job.created|timesince }} ago
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No scans yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">Job Details</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr><th>Source</th><td>{{ object.source|linkify }}</td></tr>
+                    <tr><th>Status</th><td>{% badge object.get_status_display %}</td></tr>
+                    <tr><th>Dry Run</th><td>{% if object.dry_run %}Yes{% else %}No{% endif %}</td></tr>
+                    <tr><th>Started</th><td>{{ object.started_at|placeholder }}</td></tr>
+                    <tr><th>Completed</th><td>{{ object.completed_at|placeholder }}</td></tr>
+                    {% if object.duration %}
+                    <tr><th>Duration</th><td>{{ object.duration }}</td></tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <h5 class="card-header">Results</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr><th>Discovered</th><td>{{ object.discovered_count }}</td></tr>
+                    <tr><th>To Create</th><td>{{ object.created_count }}</td></tr>
+                    <tr><th>To Update</th><td>{{ object.updated_count }}</td></tr>
+                    <tr><th>Errors</th><td>{{ object.error_count }}</td></tr>
+                </table>
+                {% if object.discovered_count > 0 %}
+                <a href="{% url 'plugins:nb_udm_plugin:discoveryresult_list' %}?scan_job_id={{ object.pk }}" class="btn btn-sm btn-outline-primary">
+                    View Results
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if object.log %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <h5 class="card-header">Log Output</h5>
+            <div class="card-body">
+                <pre class="mb-0" style="max-height: 500px; overflow-y: auto;">{{ object.log }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
