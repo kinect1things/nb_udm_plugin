@@ -1,4 +1,9 @@
+import logging
+import warnings
+
 from netbox.plugins import PluginConfig
+
+logger = logging.getLogger('nb_udm_plugin')
 
 
 class NbUdmPluginConfig(PluginConfig):
@@ -25,8 +30,10 @@ class NbUdmPluginConfig(PluginConfig):
     def ready(self):
         super().ready()
         from . import jobs  # noqa: F401
-        self._cleanup_stale_jobs()
-        self._schedule_reaper()
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='.*database during app initialization.*')
+            self._cleanup_stale_jobs()
+            self._schedule_reaper()
 
     @staticmethod
     def _cleanup_stale_jobs():
@@ -40,9 +47,7 @@ class NbUdmPluginConfig(PluginConfig):
                 completed_at=timezone.now(),
             )
             if stale:
-                import logging
-                logger = logging.getLogger('nb_udm_plugin')
-                logger.warning(f'Marked {stale} stale scan job(s) as failed on startup')
+                logger.warning('Marked %d stale scan job(s) as failed on startup', stale)
         except (OperationalError, ProgrammingError):
             pass  # Table doesn't exist yet (fresh install before migrations)
 
