@@ -59,14 +59,12 @@ class DiscoverySourceDeleteView(generic.ObjectDeleteView):
     queryset = models.DiscoverySource.objects.all()
 
 
-@register_model_view(models.DiscoverySource, 'changelog')
 class DiscoverySourceChangeLogView(ObjectChangeLogView):
-    queryset = models.DiscoverySource.objects.all()
+    pass
 
 
-@register_model_view(models.DiscoverySource, 'jobs')
 class DiscoverySourceJobsView(ObjectJobsView):
-    queryset = models.DiscoverySource.objects.all()
+    pass
 
 
 # --- Source Actions ---
@@ -118,9 +116,8 @@ class ScanJobListView(generic.ObjectListView):
     filterset_form = forms.ScanJobFilterForm
 
 
-@register_model_view(models.ScanJob, 'changelog')
 class ScanJobChangeLogView(ObjectChangeLogView):
-    queryset = models.ScanJob.objects.all()
+    pass
 
 
 # --- DiscoveryResult ---
@@ -202,9 +199,8 @@ class DiscoveryResultBulkRejectView(View):
         return redirect('plugins:nb_udm_plugin:discoveryresult_list')
 
 
-@register_model_view(models.DiscoveryResult, 'changelog')
 class DiscoveryResultChangeLogView(ObjectChangeLogView):
-    queryset = models.DiscoveryResult.objects.all()
+    pass
 
 
 # --- DiscoveryMapping ---
@@ -222,6 +218,5 @@ class DiscoveryMappingListView(generic.ObjectListView):
     filterset_form = forms.DiscoveryMappingFilterForm
 
 
-@register_model_view(models.DiscoveryMapping, 'changelog')
 class DiscoveryMappingChangeLogView(ObjectChangeLogView):
-    queryset = models.DiscoveryMapping.objects.all()
+    pass
