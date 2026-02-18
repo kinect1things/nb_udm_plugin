@@ -31,7 +31,6 @@ class DiscoverySourceTable(NetBoxTable):
 
 class ScanJobTable(NetBoxTable):
     source = tables.Column(linkify=True)
-    pk = columns.PKColumn(linkify=True)
     status = columns.ChoiceFieldColumn()
     started_at = tables.DateTimeColumn()
     completed_at = tables.DateTimeColumn()

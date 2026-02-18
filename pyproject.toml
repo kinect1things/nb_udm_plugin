@@ -23,7 +23,12 @@ Homepage = "https://github.com/kinect1things/netbox_udm_plugin"
 Repository = "https://github.com/kinect1things/netbox_udm_plugin"
 
 [tool.setuptools]
-packages = ["nb_udm_plugin"]
+packages = ["nb_udm_plugin", "nb_udm_plugin.api", "nb_udm_plugin.migrations"]
 
 [tool.setuptools.package-dir]
 "nb_udm_plugin" = "."
+"nb_udm_plugin.api" = "api"
+"nb_udm_plugin.migrations" = "migrations"
+
+[tool.setuptools.package-data]
+"nb_udm_plugin" = ["templates/**/*.html"]
