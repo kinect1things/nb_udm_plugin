@@ -13,6 +13,62 @@ NetBox plugin for discovering and synchronizing devices, VLANs, and clients from
 
 ## Installation
 
+### Docker / Podman (netbox-docker)
+
+1. Clone this repo alongside your netbox-docker directory:
+
+```bash
+cd /opt/netbox
+git clone https://github.com/kinect1things/nb_udm_plugin.git
+```
+
+2. Create `Dockerfile.plugins`:
+
+```dockerfile
+FROM docker.io/netboxcommunity/netbox:v4.5-3.4.2
+
+COPY ./nb_udm_plugin /opt/netbox-plugins/nb_udm_plugin
+
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | /opt/netbox/venv/bin/python && \
+    /opt/netbox/venv/bin/python -m pip install --no-cache-dir /opt/netbox-plugins/nb_udm_plugin && \
+    /opt/netbox/venv/bin/python -m pip uninstall -y pip
+```
+
+3. Add a `build` section to both `netbox` and `netbox-worker` in `docker-compose.override.yml`:
+
+```yaml
+services:
+  netbox:
+    build:
+      context: .
+      dockerfile: Dockerfile.plugins
+    environment:
+      NB_UDM_UNIFI_TOKEN: "your-api-token-here"
+  netbox-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.plugins
+    environment:
+      NB_UDM_UNIFI_TOKEN: "your-api-token-here"
+```
+
+4. Enable the plugin in `configuration/plugins.py`:
+
+```python
+PLUGINS = ["nb_udm_plugin"]
+```
+
+5. Build and restart:
+
+```bash
+podman-compose build netbox    # or docker compose build netbox
+podman-compose down && podman-compose up -d
+```
+
+Migrations run automatically on startup. The plugin menu appears under **UniFi Discovery** in the NetBox navbar.
+
+### Development (bare metal)
+
 ```bash
 pip install -e .
 ```
