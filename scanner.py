@@ -78,7 +78,7 @@ def scan_source(source):
         if source.sync_clients:
             clients = client.get_clients(unifi_site_name)
             for cli in clients:
-                obj = _map_client(cli, config)
+                obj = _map_client(cli, config, netbox_site_name)
                 if obj:
                     discovered.append(obj)
 
@@ -140,38 +140,43 @@ def _map_vlan(network, site_name):
     )
 
 
-def _map_client(client, config):
-    """Map a UniFi client to an IP address DiscoveredObject."""
-    ip = client.get('ip') or client.get('ipAddress')
-    mac = client.get('mac') or client.get('macAddress', '')
-    name = client.get('name') or client.get('hostname') or f"Client-{mac[-5:].replace(':', '')}"
-    client_type = client.get('type', 'unknown')
-    hostname = client.get('hostname', '')
-
-    if not ip:
+def _map_client(client_data, config, site_name):
+    """Map a UniFi client to a Device DiscoveredObject."""
+    mac = client_data.get('mac') or client_data.get('macAddress', '')
+    if not mac:
         return None
 
-    prefix_len = config.get('client_prefix_length', 24)
-    desc_format = config.get(
-        'client_description_format',
-        '{hostname} [{mac}] ({type})',
+    ip = client_data.get('ip') or client_data.get('ipAddress', '')
+    name = (
+        client_data.get('name')
+        or client_data.get('hostname')
+        or f"Client-{mac[-8:].replace(':', '')}"
     )
-    description = desc_format.format(
-        hostname=name,
-        mac=mac,
-        type=client_type,
-    )
+    client_type = (client_data.get('type') or 'unknown').upper()
+    oui = client_data.get('oui', '')
+
+    # Role based on connection type
+    roles = config.get('roles', {})
+    if client_type in ('WIRELESS', 'WIFI'):
+        role = roles.get('wireless_client', 'Wireless Client')
+    else:
+        role = roles.get('wired_client', 'Wired Client')
+
+    # Manufacturer from OUI lookup if available
+    manufacturer = oui if oui else config.get('client_manufacturer', 'Unknown')
 
     return DiscoveredObject(
-        object_type='ip_address',
-        identity_key=mac or ip,
+        object_type='device',
+        identity_key=f'{name} [{mac}]',
         data={
-            'ip': ip,
-            'prefix_length': prefix_len,
-            'description': description,
-            'dns_name': hostname.lower().replace(' ', '-') if hostname else '',
+            'name': name,
+            'serial': mac.replace(':', '').upper(),
+            'model': 'Client Device',
+            'manufacturer': manufacturer,
+            'role': role,
             'mac': mac,
-            'site_name': '',
+            'ip': ip,
+            'site_name': site_name,
         },
-        raw_data=client,
+        raw_data=client_data,
     )
